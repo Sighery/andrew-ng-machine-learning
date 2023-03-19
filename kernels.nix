@@ -1,5 +1,6 @@
 {pkgs, ...}: {
-  kernel.python.minimal = {
+  kernel.python.custom = {
     enable = true;
+    extraPackages = ps: [ ps.numpy ps.matplotlib ];
   };
 }
