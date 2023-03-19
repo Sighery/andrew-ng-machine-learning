@@ -1,43 +1,47 @@
 {
-  description = "Your jupyenv project";
+  description = "Nix Development Flake for your package";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
-  nixConfig.extra-substituters = [
-    "https://tweag-jupyter.cachix.org"
-  ];
-  nixConfig.extra-trusted-public-keys = [
-    "tweag-jupyter.cachix.org-1:UtNH4Zs6hVUFpFBTLaA4ejYavPo5EFFqgd7G7FxGW9g="
-  ];
+  outputs =
+    { self, nixpkgs, flake-utils }:
 
-  inputs.flake-compat.url = "github:edolstra/flake-compat";
-  inputs.flake-compat.flake = false;
-  inputs.flake-utils.url = "github:numtide/flake-utils";
-  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-  inputs.jupyenv.url = "github:tweag/jupyenv";
+    flake-utils.lib.eachDefaultSystem
+      (system:
+      let
+        pkgs = import nixpkgs { inherit system; };
+        python = pkgs.python311;
+        pythonPackages = python.pkgs;
+      in
+      {
+        devShells.default = pkgs.mkShell {
+          name = "andrew-ng-machine-learning";
+          nativeBuildInputs = [ pkgs.bashInteractive ];
+          buildInputs = with pythonPackages; [
+            pkgs.stdenv.cc.cc.lib
+            pkgs.poetry
+            pip
+            setuptools
+            wheel
+            venvShellHook
+          ];
+          venvDir = ".venv";
+          src = null;
+          #shellHook = ''
+          #  # fixes libstdc++ issues and libgl.so issues
+          #  LD_LIBRARY_PATH=${pkgs.stdenv.cc.cc.lib}/lib/:/run/opengl-driver/lib/
+          #'';
+          postVenv = ''
+            unset SOURCE_DATE_EPOCH
+          '';
+          postShellHook = ''
+            unset SOURCE_DATE_EPOCH
+            unset LD_PRELOAD
 
-  outputs = {
-    self,
-    flake-compat,
-    flake-utils,
-    nixpkgs,
-    jupyenv,
-    ...
-  } @ inputs:
-    flake-utils.lib.eachSystem
-    [
-      flake-utils.lib.system.x86_64-linux
-    ]
-    (
-      system: let
-        inherit (jupyenv.lib.${system}) mkJupyterlabNew;
-        jupyterlab = mkJupyterlabNew ({...}: {
-          nixpkgs = inputs.nixpkgs;
-          imports = [(import ./kernels.nix)];
-        });
-      in rec {
-        packages = {inherit jupyterlab;};
-        packages.default = jupyterlab;
-        apps.default.program = "${jupyterlab}/bin/jupyter-lab";
-        apps.default.type = "app";
-      }
-    );
+            # fixes libstdc++ issues and libgl.so issues
+            LD_LIBRARY_PATH=${pkgs.stdenv.cc.cc.lib}/lib/:/run/opengl-driver/lib/
+            
+            PYTHONPATH=$PWD/$venvDir/${python.sitePackages}:$PYTHONPATH
+          '';
+        };
+      });
 }

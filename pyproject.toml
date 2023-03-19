@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "andrew-ng-machine-learning"
+version = "0.1.0"
+description = ""
+authors = []
+
+[tool.poetry.dependencies]
+python = "^3.11"
+jupyterlab = "^3.6"
+numpy = "^1.24"
+ipykernel = "^6.21"
+matplotlib = "^3.7"
+ipympl = "^0.9.3"
+
+[tool.poetry.dev-dependencies]
+# build systems for dependencies
+hatchling = "^1.13"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
