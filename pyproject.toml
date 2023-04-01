@@ -12,6 +12,7 @@ ipykernel = "^6.21"
 matplotlib = "^3.7"
 ipympl = "^0.9.3"
 scipy = "^1.10"
+scikit-learn = "^1.2"
 
 [tool.poetry.dev-dependencies]
 # build systems for dependencies
